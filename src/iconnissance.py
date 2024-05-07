@@ -13,9 +13,21 @@ RAM: 32GB DDR4 3200 MHZ
 
 # Setup Code
 import os
+import pathlib
 import numpy as np
 import keras
 from keras import layers
 from tensorflow import data as tf_data
 import matplotlib.pyplot as plt
 
+def main():
+    src_path = os.path.abspath('../src')
+    image_database_path = os.path.abspath('../ImageDatabase')
+    arr = os.listdir('../ImageDatabase')
+    print(arr)
+    print("Image database path: " + image_database_path)
+    print("Source code path: " + src_path)
+    return None
+
+if __name__ == '__main__':
+    main()
