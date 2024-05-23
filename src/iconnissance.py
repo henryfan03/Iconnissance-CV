@@ -25,7 +25,7 @@ def initialSetUp():
     print("Dataset size: " + str(dataset.size))
     print("Dataset shape: " + str(dataset.shape))
 
-    datasize = input("Enter the number of images you would like to use from the database (i.e. 1000): ")
+    datasize = input("Enter the number of images you would like to use from the database (i.e. 1000,5000,10000): ")
     data = dataset[:int(datasize)]
 
     data_flattened = data.reshape(data.shape[0], -1)
