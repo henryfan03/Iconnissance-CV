@@ -6,17 +6,10 @@ Description: A simple vision system for detecting and classifying icons of commo
 
 # Setup Code
 import os
-import pathlib
 import numpy as np
-import keras
-from keras import layers
-from tensorflow import data as tf_data
-import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 import kmeans as iconissancekmeans
 import directoryhandler
-from PIL import Image
-
 
 def initialSetUp():
     src_path = os.path.abspath('../src')
@@ -27,66 +20,47 @@ def initialSetUp():
     print("results path: " + results_path)
     labels = os.path.abspath(pixel_art_dataset_path + '/sprites_labels.npy')
     pixelartimages = os.path.abspath(pixel_art_dataset_path + '/sprites.npy')
-    print(labels)
-    # with np.load(labels) as data:
-    #     a = data['a']
-    labelsarray = np.load(labels)
-    labelsarray.ndim
-    print("Labels Array Info")
-    print(labelsarray.ndim)
-    print(labelsarray.size)
-    print(labelsarray.shape)
     dataset = np.load(pixelartimages)
-    header = np.lib.format.header_data_from_array_1_0(dataset);
-    # plt.imshow(dataset, interpolation='nearest')
-    # plt.show()
-    print(header)
-    print(dataset.ndim)
-    print(dataset.size)
-    print(dataset.shape)
-    # print(dataset[0])
-    print(dataset[0].ndim)
-    print(dataset[0].size)
-    print(dataset[0].shape)
+    print("Dataset dimensions: " + str(dataset.ndim))
+    print("Dataset size: " + str(dataset.size))
+    print("Dataset shape: " + str(dataset.shape))
 
-    data = dataset[:1000]
+    datasize = input("Enter the number of images you would like to use from the database (i.e. 1000): ")
+    data = dataset[:int(datasize)]
 
     data_flattened = data.reshape(data.shape[0], -1)
 
-    print(data_flattened.shape)
-    print(data_flattened)
+    kmeans = KMeans
 
+    number_of_clusters = input("Enter the number of clusters (leave blank to use elbow method): ")
+    if number_of_clusters == "":
+        print("Close the chart after you have figured out a number")
+        iconissancekmeans.WCSS_Elbow_Analysis(data_flattened)
+        number_of_clusters = int(input("Select a # of clusters based on if you see an elbow in the curve: "))
+        kmeans = KMeans(n_clusters=number_of_clusters)
 
+    elif (isinstance(int(number_of_clusters), int)):
+        number_of_clusters = int(number_of_clusters)
+        kmeans = KMeans(n_clusters=number_of_clusters)
 
-    kmeans = KMeans(n_clusters=12)
     kmeans.fit(data_flattened)
 
-    # Assuming 'data' is your flattened image data and 'cluster_labels' are the assigned labels
-    # num_clusters = 12  # Get the number of clusters
-    #
-    # # Loop through clusters
-    # for cluster in range(num_clusters):
-    #     # Select a few images from this cluster (replace 3 with your desired number)
-    #     cluster_data = data[kmeans.labels_ == cluster]
-    #     image_samples = cluster_data[np.random.choice(len(cluster_data), size=3)]  # Randomly select 3 images
-    #
-    #     # Plot each image with its cluster label
-    #     for image in image_samples:
-    #         iconissancekmeans.plot_image(image, cluster)
-    #
-    # for cluster in range(num_clusters):
-    #     directory_name = str(cluster)
-    #     path = results_path + '/' + directory_name
-    #     os.mkdir(path)
-    #     print("Directory for cluster " + directory_name + " created at " + path)
-    #     cluster_data = data[kmeans.labels_ == cluster]
-    #     for i in range(len(cluster_data)-1):
-    #         cluster_image = cluster_data[i]
-    #         image_reshaped = cluster_image.reshape(16, 16, 3)
-    #         im = Image.fromarray(image_reshaped)
-    #         im.save(path + "/cluster_" + str(cluster) + "_img_" + str(i) + ".jpg")
+    show_images = input("Enter yes if you would like to see some example of classified images: ")
+    if (show_images.lower() == "yes"):
+        print("Close images to proceed")
+        for cluster in range(number_of_clusters):
+            cluster_data = data[kmeans.labels_ == cluster]
+            image_samples = cluster_data[np.random.choice(len(cluster_data), size=1)]
+            for image in image_samples:
+                iconissancekmeans.plot_image(image, cluster)
 
-    directoryhandler.prune_results(results_path)
+    resultdirectoryname = ""
+    while (resultdirectoryname == ""):
+        resultdirectoryname = input("Enter a name for the result folder: (i.e. test): ")
+
+    result_path = results_path + "/" + resultdirectoryname;
+
+    directoryhandler.save_results(result_path, number_of_clusters, data, kmeans)
 
 
 def main():
